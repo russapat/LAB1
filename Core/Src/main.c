@@ -97,14 +97,17 @@ int main(void)
 	  State_001,
 	  State_002,
 	  State_003,
+	  State_D3_0,
+	  State_D3_1,
   };
-  GPIO_PinState S1_State[2] ={0};
+  GPIO_PinState S1_State[2] = {0};
   GPIO_PinState S2_State[2] = {0};
   GPIO_PinState S3_State[2] = {0};
   uint8_t STATEDISPLAY = 0;
   uint32_t TimeLEDBink = 0;
   uint32_t TimeStamp = 0;
   uint32_t BotTimeStamp = 0;
+  uint8_t STATEDISPLAYD3 = 0;
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -118,6 +121,8 @@ int main(void)
 		  BotTimeStamp = HAL_GetTick();
 
 		  S1_State[0] = HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_10);
+		  S2_State[0] = HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_3);
+		  S3_State[0] = HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_5);
 		  switch (STATEDISPLAY) {
 			case State_Start:
 
@@ -167,6 +172,16 @@ int main(void)
 			default:
 				break;
 		}
+		if(S2_State[1] == GPIO_PIN_SET && S2_State[0] == GPIO_PIN_RESET)
+		{
+			if(HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_7) == GPIO_PIN_SET)
+			{
+				HAL_GPIO_WritePin(GPIOC, GPIO_PIN_7, GPIO_PIN_RESET);
+			}
+			else {
+				HAL_GPIO_WritePin(GPIOC, GPIO_PIN_7, GPIO_PIN_SET);
+			}
+		}
 		if(HAL_GetTick() - TimeStamp >= TimeLEDBink)
 		{
 			TimeStamp = HAL_GetTick();
@@ -180,6 +195,8 @@ int main(void)
 			}
 		 }
 		 S1_State[1] = S1_State[0];
+		 S2_State[1] = S2_State[0];
+		 S3_State[1] = S2_State[0];
 	  }
   }
 
