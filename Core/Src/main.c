@@ -97,8 +97,10 @@ int main(void)
 	  State_001,
 	  State_002,
 	  State_003,
-	  State_D3_0,
+	  State_D3_0 = 10,
 	  State_D3_1,
+	  State_D3_switch0,
+	  State_D3_switch1,
   };
   GPIO_PinState S1_State[2] = {0};
   GPIO_PinState S2_State[2] = {0};
@@ -107,7 +109,9 @@ int main(void)
   uint32_t TimeLEDBink = 0;
   uint32_t TimeStamp = 0;
   uint32_t BotTimeStamp = 0;
-  uint8_t STATEDISPLAYD3 = 0;
+  uint8_t STATEDISPLAYD3 = 10;
+  uint32_t TimeD3 = 0;
+
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -172,7 +176,71 @@ int main(void)
 			default:
 				break;
 		}
-		if(S2_State[1] == GPIO_PIN_SET && S2_State[0] == GPIO_PIN_RESET)
+		switch (STATEDISPLAYD3) {
+			case State_D3_0:
+
+				if(HAL_GetTick() - TimeD3 <= 500)
+				{
+					HAL_GPIO_WritePin(GPIOB, GPIO_PIN_6, GPIO_PIN_RESET);
+				}
+				else {
+					TimeD3 = HAL_GetTick();
+					STATEDISPLAYD3 = State_D3_1;
+				}
+				if(S3_State[1] == GPIO_PIN_SET && S3_State[0] == GPIO_PIN_RESET)
+				{
+					STATEDISPLAYD3 = State_D3_switch0;
+				}
+
+				break;
+			case State_D3_1:
+				if(HAL_GetTick() - TimeD3 <= 1500)
+				{
+					HAL_GPIO_WritePin(GPIOB, GPIO_PIN_6, GPIO_PIN_SET);
+				}
+				else {
+					TimeD3 = HAL_GetTick();
+					STATEDISPLAYD3 = State_D3_0;
+				}
+				if(S3_State[1] == GPIO_PIN_SET && S3_State[0] == GPIO_PIN_RESET)
+				{
+					STATEDISPLAYD3 = State_D3_switch1;
+				}
+				break;
+			case State_D3_switch0:
+				if(HAL_GetTick() - TimeD3 <= 1500)
+				{
+					HAL_GPIO_WritePin(GPIOB, GPIO_PIN_6, GPIO_PIN_RESET);
+				}
+				else {
+					TimeD3 = HAL_GetTick();
+					STATEDISPLAYD3 = State_D3_switch1;
+				}
+				if(S3_State[1] == GPIO_PIN_SET && S3_State[0] == GPIO_PIN_RESET)
+				{
+					STATEDISPLAYD3 = State_D3_0;
+				}
+				break;
+			case State_D3_switch1:
+				if(HAL_GetTick() - TimeD3 <= 500)
+				{
+					HAL_GPIO_WritePin(GPIOB, GPIO_PIN_6, GPIO_PIN_SET);
+				}
+				else {
+					TimeD3 = HAL_GetTick();
+					STATEDISPLAYD3 = State_D3_switch0;
+				}
+				if(S3_State[1] == GPIO_PIN_SET && S3_State[0] == GPIO_PIN_RESET)
+				{
+					STATEDISPLAYD3 = State_D3_1;
+				}
+				break;
+
+			default:
+				break;
+		}
+
+		if(S2_State[1] == GPIO_PIN_SET && S2_State[0] == GPIO_PIN_RESET) // part2
 		{
 			if(HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_7) == GPIO_PIN_SET)
 			{
@@ -182,7 +250,7 @@ int main(void)
 				HAL_GPIO_WritePin(GPIOC, GPIO_PIN_7, GPIO_PIN_SET);
 			}
 		}
-		if(HAL_GetTick() - TimeStamp >= TimeLEDBink)
+		if(HAL_GetTick() - TimeStamp >= TimeLEDBink) // part 1
 		{
 			TimeStamp = HAL_GetTick();
 			if(HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_9) == GPIO_PIN_SET)
@@ -194,9 +262,10 @@ int main(void)
 				HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, GPIO_PIN_SET);
 			}
 		 }
+
 		 S1_State[1] = S1_State[0];
 		 S2_State[1] = S2_State[0];
-		 S3_State[1] = S2_State[0];
+		 S3_State[1] = S3_State[0];
 	  }
   }
 
